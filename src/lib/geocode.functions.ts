@@ -10,7 +10,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  */
 export const geocodePlace = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ q: z.string().min(2).max(300), near: z.string().max(200).optional() }).parse(input))
+  .validator((input) => z.object({ q: z.string().min(2).max(300), near: z.string().max(200).optional() }).parse(input))
   .handler(async ({ data }) => {
     const tryQuery = async (q: string) => {
       const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(q)}`;

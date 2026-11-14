@@ -10,7 +10,7 @@ async function assertAdmin(context: { supabase: any; userId: string }) {
 
 export const inviteMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) =>
+  .validator((input) =>
     z
       .object({
         memberId: z.string().uuid(),
