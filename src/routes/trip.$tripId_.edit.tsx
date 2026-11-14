@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Check, UserPlus } from "lucide-react";
+import { ArrowLeft, Check, Download, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { useTrip, useTripPeopleAdmin } from "@/lib/use-trips";
 import { useMembers } from "@/lib/use-members";
 import { initials } from "@/lib/members";
 import type { Trip } from "@/lib/trips";
+import { downloadTripFile } from "@/lib/use-import";
 
 export const Route = createFileRoute("/trip/$tripId_/edit")({
   ssr: false,
@@ -168,6 +169,17 @@ function TripEdit() {
         </div>
 
         {isAdmin && <TripPeople trip={trip} />}
+
+        <section className="mt-12 border-t pt-8">
+          <h2 className="font-serif text-xl font-medium">Trip file</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Download this trip as a file — to keep a backup, reuse it as a starting point, or hand it to Claude to
+            refine and import again.
+          </p>
+          <Button variant="outline" className="mt-3" onClick={() => downloadTripFile(trip)}>
+            <Download className="mr-1.5 h-4 w-4" /> Download trip file
+          </Button>
+        </section>
       </main>
     </div>
   );
