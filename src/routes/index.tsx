@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Plus, MapPin, Calendar, Compass, Mail, ChevronRight } from "lucide-react";
+import { Plus, MapPin, Calendar, Compass, Mail, ChevronRight, FileUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/AppShell";
@@ -9,6 +9,7 @@ import { useTrips } from "@/lib/use-trips";
 import { formatShortDate, todayIso, tripLengthDays, type Trip } from "@/lib/trips";
 import { NewTripDialog } from "@/components/NewTripDialog";
 import { PasteConfirmationDialog } from "@/components/PasteConfirmationDialog";
+import { ImportTripDialog } from "@/components/ImportTripDialog";
 import { canonicalUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/")({
@@ -43,6 +44,7 @@ function Index() {
   const { trips, ready, isAdmin, createTrip } = useTrips();
   const [newOpen, setNewOpen] = useState(false);
   const [pasteOpen, setPasteOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [today, setToday] = useState("");
   useEffect(() => setToday(todayIso()), []);
 
@@ -76,7 +78,10 @@ function Index() {
             </h1>
           </div>
           {isAdmin && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={() => setImportOpen(true)}>
+                <FileUp className="mr-1.5 h-4 w-4" /> Import
+              </Button>
               <Button variant="secondary" onClick={() => setPasteOpen(true)}>
                 <Mail className="mr-1.5 h-4 w-4" /> <span className="hidden sm:inline">Paste confirmation</span>
                 <span className="sm:hidden">Paste</span>
@@ -100,9 +105,14 @@ function Index() {
                 : "When you’re added to a trip, it’ll show up here."}
             </p>
             {isAdmin && (
-              <Button className="mt-5" onClick={() => setNewOpen(true)}>
-                <Plus className="mr-1 h-4 w-4" /> Create your first trip
-              </Button>
+              <div className="mt-5 flex flex-wrap justify-center gap-2">
+                <Button onClick={() => setNewOpen(true)}>
+                  <Plus className="mr-1 h-4 w-4" /> Create your first trip
+                </Button>
+                <Button variant="outline" onClick={() => setImportOpen(true)}>
+                  <FileUp className="mr-1.5 h-4 w-4" /> Import a trip file
+                </Button>
+              </div>
             )}
           </div>
         ) : (
@@ -143,6 +153,11 @@ function Index() {
 
       <NewTripDialog open={newOpen} onOpenChange={setNewOpen} onCreate={handleCreate} />
       <PasteConfirmationDialog open={pasteOpen} onOpenChange={setPasteOpen} />
+      <ImportTripDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onImported={(trip) => navigate({ to: "/trip/$tripId", params: { tripId: trip.id } })}
+      />
     </AppShell>
   );
 }
