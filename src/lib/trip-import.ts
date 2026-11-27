@@ -88,7 +88,7 @@ export type ImportPlan = {
   warnings: string[];
 };
 
-const TYPES: ActivityType[] = ["airfare", "hotel", "transportation", "activity"];
+const TYPES: ActivityType[] = ["airfare", "transportation", "hotel", "meal", "activity"];
 const TYPE_ALIASES: Record<string, ActivityType> = {
   flight: "airfare",
   flights: "airfare",
@@ -103,10 +103,16 @@ const TYPE_ALIASES: Record<string, ActivityType> = {
   drive: "transportation",
   transport: "transportation",
   tour: "activity",
-  dining: "activity",
-  dinner: "activity",
-  food: "activity",
   experience: "activity",
+  meals: "meal",
+  dining: "meal",
+  dinner: "meal",
+  lunch: "meal",
+  breakfast: "meal",
+  brunch: "meal",
+  food: "meal",
+  restaurant: "meal",
+  drinks: "meal",
 };
 
 function toType(t: string | undefined): ActivityType {

@@ -1,4 +1,7 @@
-export type ActivityType = "airfare" | "hotel" | "transportation" | "activity";
+export type ActivityType = "airfare" | "transportation" | "hotel" | "meal" | "activity";
+
+/** The five kinds of entries, in the order they're shown in filters and pickers. */
+export const BOOKING_TYPES: ActivityType[] = ["airfare", "transportation", "hotel", "meal", "activity"];
 
 // Legacy values from earlier versions
 export function normalizeType(t: string | undefined): ActivityType {
@@ -6,15 +9,35 @@ export function normalizeType(t: string | undefined): ActivityType {
     case "airfare":
     case "hotel":
     case "transportation":
+    case "meal":
     case "activity":
       return t;
     case "travel":
       return "transportation";
+    case "meals":
+    case "dining":
+    case "food":
+      return "meal";
     case "experience":
       return "activity";
     default:
       return "activity";
   }
+}
+
+/** Fix up a stored booking: known type, and old "Activity · Food" entries become meals. */
+export function normalizeActivity<T extends { type?: string; category?: string }>(a: T): T & { type: ActivityType } {
+  const type = normalizeType(a.type);
+  if (type === "activity" && /^(food|dining|meal|restaurant)$/i.test(a.category ?? "")) {
+    const { category: _old, ...rest } = a;
+    return { ...(rest as T), type: "meal" };
+  }
+  return { ...a, type };
+}
+
+/** Place name used to give the map context ("Guinness Storehouse" near …). */
+export function tripPlace(trip: Pick<Trip, "title" | "destination">) {
+  return trip.destination || trip.title;
 }
 
 export type Activity = {
@@ -55,7 +78,7 @@ export type Activity = {
   roomType?: string;
   guests?: string;
   // activity
-  category?: string; // museum, wine tasting, walking tour, food, other
+  category?: string; // activity: museum, wine tasting…  ·  meal: breakfast, lunch, dinner…
   location?: string;
   tickets?: string;
   meetingPoint?: string;
@@ -102,6 +125,8 @@ export function placeQuery(a: Activity): string {
       return a.pickup ?? "";
     case "airfare":
       return a.from ? `${a.from} airport` : "";
+    case "meal":
+      return a.location || a.address || "";
     default:
       return a.location || a.meetingPoint || "";
   }
@@ -183,16 +208,65 @@ export function decodeTripPayload(payload: string): Trip | null {
   }
 }
 
-export const ACTIVITY_META: Record<ActivityType, { label: string; bg: string; fg: string }> = {
-  airfare: { label: "Airfare", bg: "bg-[var(--airfare)]", fg: "text-[var(--airfare-foreground)]" },
-  hotel: { label: "Hotel", bg: "bg-[var(--hotel)]", fg: "text-[var(--hotel-foreground)]" },
+export const ACTIVITY_META: Record<ActivityType, { label: string; plural: string; bg: string; fg: string }> = {
+  airfare: { label: "Flight", plural: "Flights", bg: "bg-[var(--airfare)]", fg: "text-[var(--airfare-foreground)]" },
   transportation: {
     label: "Transportation",
+    plural: "Transportation",
     bg: "bg-[var(--transportation)]",
     fg: "text-[var(--transportation-foreground)]",
   },
-  activity: { label: "Activity", bg: "bg-[var(--activity)]", fg: "text-[var(--activity-foreground)]" },
+  hotel: { label: "Hotel", plural: "Hotels", bg: "bg-[var(--hotel)]", fg: "text-[var(--hotel-foreground)]" },
+  meal: { label: "Meal", plural: "Meals", bg: "bg-[var(--meal)]", fg: "text-[var(--meal-foreground)]" },
+  activity: { label: "Activity", plural: "Activities", bg: "bg-[var(--activity)]", fg: "text-[var(--activity-foreground)]" },
 };
+
+/** "HH:MM" → minutes after midnight, or null. */
+export function timeToMinutes(t: string | undefined): number | null {
+  const m = /^(\d{1,2}):(\d{2})/.exec(t ?? "");
+  if (!m) return null;
+  const mins = Number(m[1]) * 60 + Number(m[2]);
+  return mins >= 0 && mins <= 24 * 60 ? mins : null;
+}
+
+/** "8h 25m", "1h", "45m", "1:35" → minutes, or null. */
+export function durationToMinutes(d: string | undefined): number | null {
+  if (!d) return null;
+  const hm = /^(\d{1,2}):(\d{2})$/.exec(d.trim());
+  if (hm) return Number(hm[1]) * 60 + Number(hm[2]);
+  const h = /(\d+(?:\.\d+)?)\s*h/i.exec(d);
+  const m = /(\d+)\s*m/i.exec(d);
+  if (!h && !m) return null;
+  return Math.round((h ? Number(h[1]) * 60 : 0) + (m ? Number(m[1]) : 0));
+}
+
+/** 24h "14:30" → "2:30 PM" in the viewer's locale. */
+export function formatTime(t: string | undefined): string {
+  const mins = timeToMinutes(t);
+  if (mins == null) return t ?? "";
+  const d = new Date(2000, 0, 1, Math.floor(mins / 60), mins % 60);
+  return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+}
+
+/**
+ * Hotel for each night of the trip (index = day index; the night that starts that day).
+ * Uses check-in/check-out when present, otherwise the day the hotel is on.
+ */
+export function hotelNights(trip: Pick<Trip, "startDate" | "endDate" | "activities">): (Activity | null)[] {
+  const days = daysBetween(trip.startDate, trip.endDate).map((d) => todayIso(d));
+  const out: (Activity | null)[] = days.map(() => null);
+  for (const a of trip.activities) {
+    if (normalizeType(a.type) !== "hotel") continue;
+    if (a.checkIn && a.checkOut) {
+      days.forEach((iso, i) => {
+        if (iso >= a.checkIn! && iso < a.checkOut!) out[i] = a;
+      });
+    } else if (out[a.dayIndex] === null && a.dayIndex < out.length) {
+      out[a.dayIndex] = a;
+    }
+  }
+  return out;
+}
 /** Bookings in time order; untimed ones go last. */
 export function sortActivities(list: Activity[]): Activity[] {
   return [...list].sort((a, b) => {

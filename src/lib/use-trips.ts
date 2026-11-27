@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { normalizeType, type Trip, type Activity, type TripPerson, uid } from "./trips";
+import { normalizeActivity, type Trip, type Activity, type TripPerson, uid } from "./trips";
 import { useAuth } from "./use-auth";
 import { useIsAdmin } from "./use-members";
 
@@ -41,7 +41,7 @@ export function rowToTrip(row: TripRow): Trip {
     startDate: row.start_date ?? "",
     endDate: row.end_date ?? "",
     coverEmoji: row.cover_emoji ?? "🌍",
-    activities: activities.map((a) => ({ ...a, type: normalizeType(a.type), id: a.id ?? uid() })),
+    activities: activities.map((a) => ({ ...normalizeActivity(a), id: a.id ?? uid() })),
     people,
   };
 }
