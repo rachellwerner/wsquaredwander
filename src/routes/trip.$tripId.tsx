@@ -1,6 +1,6 @@
 import { lazy, Suspense, useMemo } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { CalendarDays, Map as MapIcon, Pencil, Trash2, Vote } from "lucide-react";
+import { CalendarRange, ListChecks, Map as MapIcon, Pencil, Trash2, Vote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -18,27 +18,32 @@ import { TripHeader } from "@/components/TripHeader";
 import { TripDayList } from "@/components/TripDayList";
 import { ShareButton } from "@/components/ShareButton";
 import { PollsPanel } from "@/components/PollsPanel";
+import { TripCalendar } from "@/components/TripCalendar";
 import { useTrip } from "@/lib/use-trips";
 import { useMe } from "@/lib/use-members";
 import { usePolls } from "@/lib/use-polls";
-import { daysBetween, formatDayLabel, sortActivities, type Activity, type Trip } from "@/lib/trips";
+import { daysBetween, formatDayLabel, sortActivities, tripPlace, type Activity, type Trip } from "@/lib/trips";
 
 const TripMap = lazy(() => import("@/components/TripMap"));
 
-type Tab = "plan" | "map" | "vote";
+type Tab = "plan" | "calendar" | "map" | "vote";
 
 export const Route = createFileRoute("/trip/$tripId")({
   ssr: false,
-  validateSearch: (search: Record<string, unknown>): { tab?: Tab } => {
+  validateSearch: (search: Record<string, unknown>): { tab?: Tab; focus?: string } => {
     const tab = search["tab"];
-    return tab === "map" || tab === "vote" ? { tab } : {};
+    const focus = typeof search["focus"] === "string" ? search["focus"] : undefined;
+    return {
+      ...(tab === "calendar" || tab === "map" || tab === "vote" ? { tab } : {}),
+      ...(focus ? { focus } : {}),
+    };
   },
   component: TripView,
 });
 
 function TripView() {
   const { tripId } = Route.useParams();
-  const { tab = "plan" } = Route.useSearch();
+  const { tab = "plan", focus } = Route.useSearch();
   const navigate = useNavigate();
   const { trip, ready, canEdit, isAdmin, addActivity, updateActivity, removeActivity, deleteTrip } = useTrip(tripId);
   const { me } = useMe();
@@ -70,7 +75,8 @@ function TripView() {
     navigate({ to: "/trip/$tripId", params: { tripId }, search: t === "plan" ? {} : { tab: t }, replace: true });
 
   const tabs: { id: Tab; label: string; icon: typeof MapIcon; badge?: number }[] = [
-    { id: "plan", label: "Itinerary", icon: CalendarDays },
+    { id: "plan", label: "Itinerary", icon: ListChecks },
+    { id: "calendar", label: "Calendar", icon: CalendarRange },
     { id: "map", label: "Map", icon: MapIcon },
     { id: "vote", label: "Vote", icon: Vote, badge: openVotes },
   ];
@@ -123,13 +129,13 @@ function TripView() {
       />
 
       <div className="sticky top-[57px] z-20 border-b bg-background/90 backdrop-blur sm:top-[61px]">
-        <div className="mx-auto flex max-w-4xl gap-1 px-4 sm:px-6">
+        <div className="mx-auto flex max-w-4xl gap-1 overflow-x-auto px-4 sm:px-6">
           {tabs.map((t) => (
             <button
               key={t.id}
               type="button"
               onClick={() => setTab(t.id)}
-              className={`relative inline-flex items-center gap-1.5 border-b-2 px-3 py-3 text-sm font-medium transition-colors ${
+              className={`relative inline-flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-3 text-sm font-medium transition-colors ${
                 tab === t.id ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -142,7 +148,7 @@ function TripView() {
         </div>
       </div>
 
-      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-10">
+      <main className={`mx-auto px-4 py-8 sm:px-6 sm:py-10 ${tab === "calendar" ? "max-w-7xl" : "max-w-4xl"}`}>
         {tab === "plan" && (
           <TripDayList
             trip={trip}
@@ -150,6 +156,15 @@ function TripView() {
             onAdd={addActivity}
             onUpdate={updateActivity}
             onDelete={removeActivity}
+            focusId={focus}
+          />
+        )}
+        {tab === "calendar" && (
+          <TripCalendar
+            trip={trip}
+            onSelect={(a) =>
+              navigate({ to: "/trip/$tripId", params: { tripId }, search: { focus: a.id }, replace: true })
+            }
           />
         )}
         {tab === "map" && <WholeTripMap trip={trip} onPinned={canEdit ? updateActivity : undefined} />}
@@ -171,7 +186,7 @@ function WholeTripMap({ trip, onPinned }: { trip: Trip; onPinned?: (a: Activity)
   return (
     <div>
       <Suspense fallback={<div className="h-[60vh] animate-pulse rounded-xl bg-secondary" />}>
-        <TripMap activities={onMap} near={trip.destination} onPinned={onPinned} className="h-[60vh]" />
+        <TripMap activities={onMap} near={tripPlace(trip)} onPinned={onPinned} className="h-[60vh]" />
       </Suspense>
       <ol className="mt-4 space-y-1.5 text-sm">
         {onMap.map((a, i) => (
