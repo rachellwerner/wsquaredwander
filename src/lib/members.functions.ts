@@ -57,3 +57,21 @@ export const inviteMember = createServerFn({ method: "POST" })
 
     return { ok: true, email: member.email as string, mode };
   });
+
+/**
+ * Admin: who has actually finished signing up. An invite creates the account right away,
+ * so "has an account" isn't enough; someone is active once they've confirmed and signed in.
+ */
+export const getLoginStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    if (error) throw new Error(error.message);
+    const status: Record<string, "active" | "invited"> = {};
+    for (const u of data.users) {
+      status[u.id] = u.email_confirmed_at && u.last_sign_in_at ? "active" : "invited";
+    }
+    return status;
+  });
