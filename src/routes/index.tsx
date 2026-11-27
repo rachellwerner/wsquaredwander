@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Plus, MapPin, Calendar, Compass, Mail, ChevronRight, FileUp } from "lucide-react";
+import { Plus, Calendar, Compass, Mail, ChevronRight, FileUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/AppShell";
@@ -182,15 +182,8 @@ function TripCard({ trip, today, highlight }: { trip: Trip; today: string; highl
       }`}
     >
       <div className="flex items-start gap-3">
-        <span className="text-3xl">{trip.coverEmoji ?? "🌍"}</span>
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-serif text-xl font-medium">{trip.title}</h3>
-          {trip.destination && (
-            <p className="mt-0.5 inline-flex items-center gap-1 text-sm text-muted-foreground">
-              <MapPin className="h-3.5 w-3.5" />
-              {trip.destination}
-            </p>
-          )}
         </div>
         {countdown && (
           <span className="shrink-0 rounded-full bg-accent/15 px-2.5 py-1 text-xs font-semibold text-accent">{countdown}</span>

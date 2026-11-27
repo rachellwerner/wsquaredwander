@@ -288,7 +288,7 @@ function PendingCard({
             <SelectContent>
               {trips.map((t) => (
                 <SelectItem key={t.id} value={t.id}>
-                  {t.coverEmoji} {t.title}
+                  {t.title}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Calendar, MapPin, Users } from "lucide-react";
+import { ArrowLeft, Calendar, Users } from "lucide-react";
 import type { Trip } from "@/lib/trips";
 import { formatShortDate, tripLengthDays } from "@/lib/trips";
 import { firstName } from "@/lib/members";
@@ -30,18 +30,8 @@ export function TripHeader({
         )}
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl sm:text-4xl">{trip.coverEmoji ?? "🌍"}</span>
-              <h1 className="font-serif text-2xl font-medium leading-tight sm:text-4xl">
-                {trip.title || "Untitled trip"}
-              </h1>
-            </div>
+            <h1 className="font-serif text-2xl font-medium leading-tight sm:text-4xl">{trip.title || "Untitled trip"}</h1>
             <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-muted-foreground">
-              {trip.destination && (
-                <span className="inline-flex items-center gap-1.5">
-                  <MapPin className="h-4 w-4" /> {trip.destination}
-                </span>
-              )}
               {trip.startDate && (
                 <span className="inline-flex items-center gap-1.5">
                   <Calendar className="h-4 w-4" />

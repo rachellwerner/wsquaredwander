@@ -17,9 +17,7 @@ export const Route = createFileRoute("/trip/$tripId_/edit")({
   component: TripEdit,
 });
 
-const EMOJIS = ["✈️", "🏖️", "🏔️", "🍷", "🍝", "🗽", "🗼", "🏛️", "🌋", "🚆", "🏝️", "🌅", "🍀", "🥃"];
-
-type Details = Pick<Trip, "title" | "destination" | "startDate" | "endDate" | "coverEmoji">;
+type Details = Pick<Trip, "title" | "startDate" | "endDate">;
 
 function TripEdit() {
   const { tripId } = Route.useParams();
@@ -35,10 +33,8 @@ function TripEdit() {
     if (trip && !draft) {
       setDraft({
         title: trip.title,
-        destination: trip.destination,
         startDate: trip.startDate,
         endDate: trip.endDate,
-        coverEmoji: trip.coverEmoji,
       });
     }
   }, [trip, draft]);
@@ -107,43 +103,10 @@ function TripEdit() {
 
         <div className="space-y-6">
           <div>
-            <Label className="mb-2 block">Cover</Label>
-            <div className="flex flex-wrap gap-2">
-              {EMOJIS.map((e) => (
-                <button
-                  key={e}
-                  type="button"
-                  onClick={() => set("coverEmoji", e)}
-                  className={`flex h-11 w-11 items-center justify-center rounded-lg border text-xl transition-all ${
-                    draft.coverEmoji === e
-                      ? "border-primary bg-primary/10 ring-2 ring-primary/20"
-                      : "bg-card hover:bg-secondary"
-                  }`}
-                >
-                  {e}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
             <Label htmlFor="title" className="mb-1.5 block">
-              Trip name
+              Trip
             </Label>
-            <Input id="title" value={draft.title} onChange={(e) => set("title", e.target.value)} placeholder="Ireland with the parents" />
-          </div>
-
-          <div>
-            <Label htmlFor="destination" className="mb-1.5 block">
-              Destination
-            </Label>
-            <Input
-              id="destination"
-              value={draft.destination}
-              onChange={(e) => set("destination", e.target.value)}
-              placeholder="Dublin, Kerry & Cork"
-            />
-            <p className="mt-1.5 text-xs text-muted-foreground">Also helps the map find places.</p>
+            <Input id="title" value={draft.title} onChange={(e) => set("title", e.target.value)} placeholder="Ireland 2027" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">

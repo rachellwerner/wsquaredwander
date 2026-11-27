@@ -15,6 +15,7 @@ import {
   formatShortDate,
   sortActivities,
   todayIso,
+  tripPlace,
   type Activity,
   type Trip,
 } from "@/lib/trips";
@@ -85,7 +86,7 @@ function TodayPage() {
               <div className="mb-4 flex gap-2 overflow-x-auto">
                 {current.map((t) => (
                   <Button key={t.id} size="sm" variant={t.id === tripId ? "default" : "outline"} onClick={() => setPickedId(t.id)}>
-                    {t.coverEmoji} {t.title}
+                    {t.title}
                   </Button>
                 ))}
               </div>
@@ -107,7 +108,7 @@ function NothingToday({ next, today }: { next?: Trip; today: string }) {
       {next ? (
         <>
           <p className="mt-2 text-muted-foreground">
-            Next up: <span className="font-medium text-foreground">{next.coverEmoji} {next.title}</span> on{" "}
+            Next up: <span className="font-medium text-foreground">{next.title}</span> on{" "}
             {formatShortDate(next.startDate)} — {days === 1 ? "tomorrow!" : `in ${days} days.`}
           </p>
           <Link to="/trip/$tripId" params={{ tripId: next.id }} className="mt-5 inline-block">
@@ -153,7 +154,7 @@ function TodayForTrip({ tripId, today, now }: { tripId: string; today: string; n
           params={{ tripId: trip.id }}
           className="text-sm text-muted-foreground hover:text-foreground"
         >
-          {trip.coverEmoji} {trip.title} · Day {dayIndex + 1} of {days.length}
+          {trip.title} · Day {dayIndex + 1} of {days.length}
         </Link>
         <h1 className="mt-1 font-serif text-3xl font-medium sm:text-4xl">{formatDayLabel(date)}</h1>
       </div>
@@ -189,7 +190,7 @@ function TodayForTrip({ tripId, today, now }: { tripId: string; today: string; n
       {showMap && (
         <div className="mb-6">
           <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-secondary" />}>
-            <TripMap activities={plans} near={trip.destination} onPinned={canEdit ? updateActivity : undefined} className="h-64 sm:h-80" />
+            <TripMap activities={plans} near={tripPlace(trip)} onPinned={canEdit ? updateActivity : undefined} className="h-64 sm:h-80" />
           </Suspense>
         </div>
       )}

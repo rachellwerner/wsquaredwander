@@ -121,11 +121,9 @@ export function ImportTripDialog({
         {plan && (
           <div className="space-y-3 rounded-xl border bg-card p-4">
             <div className="flex items-start gap-3">
-              <span className="text-3xl">{plan.trip.coverEmoji}</span>
               <div className="min-w-0">
                 <p className="font-serif text-xl font-medium">{plan.trip.title}</p>
                 <p className="text-sm text-muted-foreground">
-                  {plan.trip.destination ? `${plan.trip.destination} · ` : ""}
                   {formatShortDate(plan.trip.startDate)} — {formatShortDate(plan.trip.endDate)} ·{" "}
                   {tripLengthDays(plan.trip)} days
                 </p>
@@ -136,7 +134,7 @@ export function ImportTripDialog({
               {counts.length > 0 && (
                 <span className="text-muted-foreground">
                   {" "}
-                  ({counts.map((c) => `${c.n} ${ACTIVITY_META[c.t].label.toLowerCase()}`).join(", ")})
+                  ({counts.map((c) => `${c.n} ${(c.n === 1 ? ACTIVITY_META[c.t].label : ACTIVITY_META[c.t].plural).toLowerCase()}`).join(", ")})
                 </span>
               )}
               {plan.votes.length > 0 && ` · ${plan.votes.length} vote${plan.votes.length === 1 ? "" : "s"} to start`}

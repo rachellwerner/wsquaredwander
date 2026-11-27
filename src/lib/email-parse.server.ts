@@ -1,13 +1,13 @@
 import type { Activity, ActivityType } from "./trips";
 
-const TYPES: ActivityType[] = ["airfare", "hotel", "transportation", "activity"];
+const TYPES: ActivityType[] = ["airfare", "transportation", "hotel", "meal", "activity"];
 
 export type ParsedBooking = Omit<Activity, "id" | "dayIndex"> & { date?: string };
 
 const SYSTEM_PROMPT = `You extract travel bookings from confirmation emails.
 Return STRICT JSON: {"bookings":[...]} and nothing else.
 Each booking object may use these keys only:
-type (one of "airfare","hotel","transportation","activity"), title, date (YYYY-MM-DD, the date the booking happens or the hotel check-in date),
+type (one of "airfare","transportation","hotel","meal","activity" — "meal" for restaurant reservations), title, date (YYYY-MM-DD, the date the booking happens or the hotel check-in date),
 startTime (HH:MM 24h), endTime, notes, url, confirmation, cost,
 mode, from, to, duration,
 airline, flightNumber, seats, terminal,
