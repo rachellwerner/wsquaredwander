@@ -16,6 +16,8 @@ import {
 import { BOOKING_ICONS } from "./booking-icons";
 
 const SLOT = 22; // px per half hour
+/** Extra classes for an entry that's still being planned (not booked yet). */
+const planning = (a: Activity) => (a.confirmed ? "" : "opacity-70 outline-dashed outline-2 -outline-offset-2 outline-current/60");
 const DEFAULT_MINUTES = 60;
 
 type Placed = { a: Activity; type: ActivityType; start: number; end: number; lane: number; lanes: number };
@@ -109,6 +111,10 @@ export function TripCalendar({ trip, onSelect }: { trip: Trip; onSelect?: (a: Ac
             </span>
           );
         })}
+        <span className="inline-flex items-center gap-1.5">
+          <span className="inline-block h-4 w-6 rounded border-2 border-dashed border-muted-foreground/60" />
+          Still planning
+        </span>
       </div>
 
       <div className="max-h-[75vh] overflow-auto rounded-xl border bg-card shadow-sm">
@@ -143,8 +149,8 @@ export function TripCalendar({ trip, onSelect }: { trip: Trip; onSelect?: (a: Ac
                   <button
                     type="button"
                     onClick={() => onSelect?.(h)}
-                    className={`w-full truncate rounded px-1.5 py-1 text-left font-medium ${ACTIVITY_META.hotel.bg} ${ACTIVITY_META.hotel.fg}`}
-                    title={h.title}
+                    className={`w-full truncate rounded px-1.5 py-1 text-left font-medium ${ACTIVITY_META.hotel.bg} ${ACTIVITY_META.hotel.fg} ${planning(h)}`}
+                    title={`${h.title}${h.confirmed ? " · Confirmed" : " · Planning"}`}
                   >
                     {h.title}
                   </button>
@@ -168,7 +174,7 @@ export function TripCalendar({ trip, onSelect }: { trip: Trip; onSelect?: (a: Ac
                         key={a.id}
                         type="button"
                         onClick={() => onSelect?.(a)}
-                        className={`block w-full truncate rounded px-1.5 py-1 text-left font-medium ${ACTIVITY_META[t].bg} ${ACTIVITY_META[t].fg}`}
+                        className={`block w-full truncate rounded px-1.5 py-1 text-left font-medium ${ACTIVITY_META[t].bg} ${ACTIVITY_META[t].fg} ${planning(a)}`}
                         title={a.title}
                       >
                         {a.title}
@@ -211,8 +217,8 @@ export function TripCalendar({ trip, onSelect }: { trip: Trip; onSelect?: (a: Ac
                     key={p.a.id}
                     type="button"
                     onClick={() => onSelect?.(p.a)}
-                    title={`${formatTime(p.a.startTime)} ${p.a.title}`}
-                    className={`absolute overflow-hidden rounded-md px-1.5 py-1 text-left leading-tight shadow-sm ring-1 ring-black/5 transition-[filter] hover:brightness-110 ${ACTIVITY_META[p.type].bg} ${ACTIVITY_META[p.type].fg}`}
+                    title={`${formatTime(p.a.startTime)} ${p.a.title}${p.a.confirmed ? " · Confirmed" : " · Planning"}`}
+                    className={`absolute overflow-hidden rounded-md px-1.5 py-1 text-left leading-tight shadow-sm ring-1 ring-black/5 transition-[filter] hover:brightness-110 ${ACTIVITY_META[p.type].bg} ${ACTIVITY_META[p.type].fg} ${planning(p.a)}`}
                     style={{
                       top: top(p.start) + 1,
                       height,

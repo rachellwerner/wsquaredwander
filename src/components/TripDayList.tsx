@@ -22,6 +22,7 @@ import type { BookingDraft } from "./BookingFields";
 const TripMap = lazy(() => import("./TripMap"));
 
 type Filter = "all" | ActivityType;
+type Status = "all" | "confirmed" | "planning";
 type View = "summary" | "detail";
 const VIEW_KEY = "w2ander:itinerary-view";
 
@@ -51,6 +52,7 @@ export function TripDayList({
 }) {
   const days = useMemo(() => daysBetween(trip.startDate, trip.endDate), [trip.startDate, trip.endDate]);
   const [filter, setFilter] = useState<Filter>("all");
+  const [status, setStatus] = useState<Status>("all");
   const [view, setViewState] = useState<View>("summary");
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [adding, setAdding] = useState<{ key: string; dayIndex: number; type: ActivityType } | null>(null);
@@ -75,6 +77,7 @@ export function TripDayList({
   useEffect(() => {
     if (!focusId) return;
     setFilter("all");
+    setStatus("all");
     setOpen((o) => ({ ...o, [focusId]: true }));
     const t = setTimeout(() => {
       const el = document.getElementById(`entry-${focusId}`);
@@ -90,6 +93,7 @@ export function TripDayList({
     trip.activities.forEach((a) => (c[normalizeType(a.type)] += 1));
     return c;
   }, [trip.activities]);
+  const confirmedCount = useMemo(() => trip.activities.filter((a) => a.confirmed).length, [trip.activities]);
 
   if (days.length === 0) {
     return (
@@ -113,10 +117,13 @@ export function TripDayList({
   };
 
   const isOpen = (id: string) => open[id] ?? view === "detail";
-  const matching = (a: Activity) => filter === "all" || normalizeType(a.type) === filter;
+  const matching = (a: Activity) =>
+    (filter === "all" || normalizeType(a.type) === filter) &&
+    (status === "all" || (status === "confirmed") === !!a.confirmed);
+  const filtering = filter !== "all" || status !== "all";
   const visibleDays = days
     .map((date, dayIndex) => ({ date, dayIndex, items: sortActivities(trip.activities.filter((a) => a.dayIndex === dayIndex && matching(a))) }))
-    .filter((d) => filter === "all" || d.items.length > 0 || adding?.dayIndex === d.dayIndex);
+    .filter((d) => !filtering || d.items.length > 0 || adding?.dayIndex === d.dayIndex);
 
   return (
     <div>
@@ -135,7 +142,30 @@ export function TripDayList({
             />
           ))}
         </div>
-        <div className="inline-flex shrink-0 self-start rounded-lg border bg-card p-0.5 text-xs font-medium sm:self-auto">
+        <div className="flex shrink-0 flex-wrap gap-2 self-start sm:self-auto">
+        <div className="inline-flex rounded-lg border bg-card p-0.5 text-xs font-medium" role="group" aria-label="Booking status">
+          {(
+            [
+              ["all", "All", null],
+              ["confirmed", "Confirmed", confirmedCount],
+              ["planning", "Planning", trip.activities.length - confirmedCount],
+            ] as const
+          ).map(([v, label, n]) => (
+            <button
+              key={v}
+              type="button"
+              aria-pressed={status === v}
+              onClick={() => setStatus(v)}
+              className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 transition-colors ${
+                status === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {label}
+              {n !== null && <span className="tabular-nums opacity-70">{n}</span>}
+            </button>
+          ))}
+        </div>
+        <div className="inline-flex rounded-lg border bg-card p-0.5 text-xs font-medium">
           {(
             [
               ["summary", "Summary", ChevronsDownUp],
@@ -155,12 +185,17 @@ export function TripDayList({
             </button>
           ))}
         </div>
+        </div>
       </div>
 
-      {filter !== "all" && visibleDays.length === 0 && (
+      {filtering && visibleDays.length === 0 && (
         <div className="rounded-xl border border-dashed bg-card/50 p-10 text-center text-sm text-muted-foreground">
-          No {ACTIVITY_META[filter].plural.toLowerCase()} yet.
-          {!readOnly && (
+          {status === "all"
+            ? `No ${filter === "all" ? "entries" : ACTIVITY_META[filter].plural.toLowerCase()} yet.`
+            : `Nothing ${status === "confirmed" ? "confirmed" : "still in planning"}${
+                filter === "all" ? "" : ` in ${ACTIVITY_META[filter].plural.toLowerCase()}`
+              }.`}
+          {!readOnly && filter !== "all" && status === "all" && (
             <div className="mt-4">
               <Button size="sm" variant="outline" onClick={() => startAdd(0)}>
                 <Plus className="mr-1 h-4 w-4" /> Add {ACTIVITY_META[filter].label.toLowerCase()}
@@ -170,7 +205,7 @@ export function TripDayList({
         </div>
       )}
 
-      <div className={filter === "all" ? "space-y-9" : "space-y-6"}>
+      <div className={filtering ? "space-y-6" : "space-y-9"}>
         {visibleDays.map(({ date, dayIndex, items }) => {
           const isToday = todayIso(date) === today;
           const newHere = adding?.dayIndex === dayIndex ? adding : null;
@@ -234,6 +269,7 @@ export function TripDayList({
                       expanded={isOpen(a.id)}
                       onExpandedChange={(o) => setOpen((m) => ({ ...m, [a.id]: o }))}
                       onSave={readOnly ? undefined : (d) => onUpdate?.({ ...(d as Activity), id: a.id, dayIndex: placeOnDay(d, a.dayIndex) })}
+                      onToggleConfirmed={readOnly ? undefined : (c) => onUpdate?.({ ...a, confirmed: c })}
                       onDelete={
                         readOnly
                           ? undefined

@@ -26,13 +26,18 @@ export function normalizeType(t: string | undefined): ActivityType {
 }
 
 /** Fix up a stored booking: known type, and old "Activity · Food" entries become meals. */
-export function normalizeActivity<T extends { type?: string; category?: string }>(a: T): T & { type: ActivityType } {
+export function normalizeActivity<T extends { type?: string; category?: string; confirmed?: boolean; confirmation?: string }>(
+  a: T,
+): T & { type: ActivityType } {
   const type = normalizeType(a.type);
+  // Entries saved before the Confirmed checkbox existed count as booked if they have a confirmation number.
+  const confirmed = a.confirmed ?? (a.confirmation ? true : undefined);
+  const base = confirmed === undefined ? a : { ...a, confirmed };
   if (type === "activity" && /^(food|dining|meal|restaurant)$/i.test(a.category ?? "")) {
-    const { category: _old, ...rest } = a;
+    const { category: _old, ...rest } = base;
     return { ...(rest as T), type: "meal" };
   }
-  return { ...a, type };
+  return { ...base, type };
 }
 
 /** Place name used to give the map context ("Guinness Storehouse" near …). */
@@ -52,6 +57,7 @@ export type Activity = {
   confirmation?: string;
   cost?: string;
   who?: string[]; // member ids of the people on this booking
+  confirmed?: boolean; // booked (true) vs. still planning
   // map pin (filled in automatically from address/location)
   lat?: number;
   lng?: number;
