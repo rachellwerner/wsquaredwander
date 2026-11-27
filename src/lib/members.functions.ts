@@ -36,11 +36,18 @@ export const inviteMember = createServerFn({ method: "POST" })
       data: { full_name: member.name },
     });
 
+    let mode: "invite" | "reset" = "invite";
     if (inviteError) {
       const msg = inviteError.message ?? "";
       if (!/already been registered|already exists/i.test(msg)) {
         throw new Error(msg || "Could not send that invitation.");
       }
+      // They already have an account: send a link to (re)set their password instead.
+      const { error: resetError } = await supabaseAdmin.auth.resetPasswordForEmail(member.email, {
+        redirectTo: data.redirectTo,
+      });
+      if (resetError) throw new Error(resetError.message || "Could not send a password link.");
+      mode = "reset";
     }
 
     await context.supabase
@@ -48,5 +55,5 @@ export const inviteMember = createServerFn({ method: "POST" })
       .update({ invited_at: new Date().toISOString() })
       .eq("id", member.id);
 
-    return { ok: true, email: member.email as string };
+    return { ok: true, email: member.email as string, mode };
   });
