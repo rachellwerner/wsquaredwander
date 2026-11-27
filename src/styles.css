@@ -51,6 +51,8 @@
   --color-hotel-foreground: var(--hotel-foreground);
   --color-transportation: var(--transportation);
   --color-transportation-foreground: var(--transportation-foreground);
+  --color-meal: var(--meal);
+  --color-meal-foreground: var(--meal-foreground);
   --color-activity: var(--activity);
   --color-activity-foreground: var(--activity-foreground);
   --font-serif: "Fraunces", ui-serif, Georgia, serif;
@@ -86,6 +88,8 @@
   --hotel-foreground: oklch(0.985 0.006 250);
   --transportation: oklch(0.58 0.09 225);
   --transportation-foreground: oklch(0.985 0.006 250);
+  --meal: oklch(0.55 0.09 185);
+  --meal-foreground: oklch(0.985 0.006 250);
   --activity: oklch(0.52 0.03 255);
   --activity-foreground: oklch(0.985 0.006 250);
   --chart-1: oklch(0.646 0.222 41.116);
@@ -129,6 +133,8 @@
   --hotel-foreground: oklch(0.18 0.02 255);
   --transportation: oklch(0.76 0.09 225);
   --transportation-foreground: oklch(0.18 0.02 255);
+  --meal: oklch(0.78 0.09 185);
+  --meal-foreground: oklch(0.18 0.02 255);
   --activity: oklch(0.78 0.02 255);
   --activity-foreground: oklch(0.18 0.02 255);
   --chart-1: oklch(0.488 0.243 264.376);
