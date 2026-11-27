@@ -39,6 +39,14 @@ See `.env.example`. `VITE_*` values are public (they ship to the browser).
 `SUPABASE_SECRET_KEY` and `ANTHROPIC_API_KEY` are secret — only ever set them
 in Vercel, never commit them.
 
+## Email forwarding (confirmation emails → Inbox)
+
+Forward a booking confirmation to `yourname@wsquaredwander.com` (shown on the Inbox page) and it appears in your Inbox to review and add to a trip. Only mail from someone on the People page is processed.
+
+1. Resend → Domains → wsquaredwander.com: turn on receiving and add its MX record at the domain's DNS.
+2. Resend → Webhooks: add `https://wsquaredwander.com/api/public/inbound-email` for the `email.received` event.
+3. Vercel → Settings → Environment Variables: `INBOUND_EMAIL_DOMAIN` = `wsquaredwander.com`, `RESEND_WEBHOOK_SECRET` (the webhook's signing secret), `RESEND_API_KEY` (a full-access Resend key, used to read received mail). Then redeploy.
+
 ## Local development
 
 ```bash
