@@ -25,6 +25,7 @@ const bookingSchema = z
     notes: str,
     url: str,
     confirmation: str,
+    confirmed: z.boolean().optional(), // true = booked; leave out while still planning
     cost: str,
     // transport / flights
     mode: str,

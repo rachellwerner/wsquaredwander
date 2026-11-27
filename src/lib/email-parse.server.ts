@@ -50,6 +50,7 @@ export function sanitizeBookings(raw: unknown): ParsedBooking[] {
       if (value !== undefined) booking[key] = value;
     }
     if (!booking["title"]) booking["title"] = type === "hotel" ? "Hotel stay" : "Booking";
+    booking["confirmed"] = true; // it came from a confirmation email
     out.push(booking as ParsedBooking);
   }
   return out;
