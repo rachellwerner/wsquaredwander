@@ -89,6 +89,8 @@
   --transportation: oklch(0.58 0.09 225);
   --transportation-foreground: oklch(0.985 0.006 250);
   --meal: oklch(0.55 0.09 185);
+  --cal-tint: 13%;
+  --now: oklch(0.62 0.2 25);
   --meal-foreground: oklch(0.985 0.006 250);
   --activity: oklch(0.52 0.03 255);
   --activity-foreground: oklch(0.985 0.006 250);
@@ -134,6 +136,7 @@
   --transportation: oklch(0.76 0.09 225);
   --transportation-foreground: oklch(0.18 0.02 255);
   --meal: oklch(0.78 0.09 185);
+  --cal-tint: 20%;
   --meal-foreground: oklch(0.18 0.02 255);
   --activity: oklch(0.78 0.02 255);
   --activity-foreground: oklch(0.18 0.02 255);
