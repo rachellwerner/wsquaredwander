@@ -8,10 +8,8 @@ Import on the Trips page → **Import**. Export from a trip's **Edit** page.
   "version": 1,
   "trip": {
     "title": "Ireland 2027",
-    "destination": "Dublin, Kerry & Cork",
     "startDate": "2027-04-17",
-    "endDate": "2027-04-26",
-    "coverEmoji": "🍀"
+    "endDate": "2027-04-26"
   },
   "people": ["Rachel", "Brendan"],
   "bookings": [
@@ -42,6 +40,15 @@ Import on the Trips page → **Import**. Export from a trip's **Edit** page.
       "category": "tour",
       "location": "St James's Gate, Dublin",
       "notes": "Book the Connoisseur tasting"
+    },
+    {
+      "date": "2027-04-19",
+      "type": "meal",
+      "title": "Dinner at Chapter One",
+      "startTime": "19:30",
+      "category": "Dinner",
+      "location": "Chapter One, 18-19 Parnell Square, Dublin",
+      "guests": "6"
     }
   ],
   "votes": [
@@ -61,13 +68,16 @@ Import on the Trips page → **Import**. Export from a trip's **Edit** page.
 
 - **Dates** are `YYYY-MM-DD`. **Times** are 24-hour `HH:MM`. Every booking needs a
   `title` and should have a `date` (or `"day": 3` = third day of the trip).
-- **type**: `airfare`, `hotel`, `transportation`, or `activity`
-  (food, tours, museums, tastings are all `activity`; use `category` for detail).
+- **type**: `airfare`, `transportation`, `hotel`, `meal`, or `activity`.
+  Restaurant reservations are `meal` (`category`: Breakfast, Lunch, Dinner, Drinks…);
+  tours, museums and tastings are `activity` (use `category` for detail).
 - **who**: first names of people already on the People page, or `"everyone"`.
   Leave it out if it's everyone. Unknown names are skipped and listed as a warning.
 - **Hotels**: put them on the check-in date and include `checkIn` / `checkOut`;
   the Today view shows the hotel on every night of the stay.
-- **Maps**: give activities a `location` and hotels an `address` — that's what
+- **Calendar**: give entries a `startTime` and `endTime` (or a flight `duration`) so they
+  fill the right slots on the Calendar tab; entries without a time show under “Anytime”.
+- **Maps**: give activities and meals a `location` and hotels an `address` — that's what
   gets pinned on the map. Real place names work best.
 - **votes** (optional): undecided choices. Each becomes a vote on the trip's
   Vote tab with 2–10 options (each option is a booking).
@@ -77,3 +87,5 @@ All booking fields: `date, day, type, title, startTime, endTime, who, notes, url
 confirmation, cost, mode, from, to, duration, airline, flightNumber, seats,
 terminal, provider, pickup, dropoff, hotelName, address, checkIn, checkOut,
 roomType, guests, category, location, tickets, meetingPoint`.
+
+Older files with `destination` or `coverEmoji` still import; those fields just aren’t shown anymore.
