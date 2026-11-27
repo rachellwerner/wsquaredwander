@@ -24,7 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { useIsAdmin, useMembers } from "@/lib/use-members";
 import { firstName, formatBirthday, roleLabel, type Member, type MemberRole } from "@/lib/members";
-import { inviteMember } from "@/lib/members.functions";
+import { getLoginStatus, inviteMember } from "@/lib/members.functions";
 import { canonicalUrl } from "@/lib/site";
 import { AppShell } from "@/components/AppShell";
 
@@ -66,6 +66,12 @@ function UsersPage() {
   const { isAdmin, ready: roleReady } = useIsAdmin();
   const { members, loading, refetch } = useMembers();
   const invite = useServerFn(inviteMember);
+  const loadStatus = useServerFn(getLoginStatus);
+  const [loginStatus, setLoginStatus] = useState<Record<string, "active" | "invited">>({});
+  const refreshStatus = () =>
+    loadStatus()
+      .then(setLoginStatus)
+      .catch(() => {});
 
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Draft>(EMPTY);
@@ -79,6 +85,19 @@ function UsersPage() {
   useEffect(() => {
     if (ready && user && roleReady && !isAdmin) navigate({ to: "/" });
   }, [ready, user, roleReady, isAdmin, navigate]);
+
+  useEffect(() => {
+    if (isAdmin) void refreshStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin, members.length]);
+
+  /** Active = finished signing up; Invited = has an account from an invite but hasn't set a password yet. */
+  const statusOf = (m: Member) => {
+    if (!m.email) return "none" as const;
+    if (m.userId && loginStatus[m.userId] === "active") return "active" as const;
+    if (m.userId || m.invitedAt) return "invited" as const;
+    return "new" as const;
+  };
 
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setDraft((d) => ({ ...d, [k]: v }));
 
@@ -150,6 +169,7 @@ function UsersPage() {
           : `Invitation sent to ${m.email}`,
       );
       await refetch();
+      void refreshStatus();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send that invitation");
     } finally {
@@ -200,7 +220,7 @@ function UsersPage() {
                       {roleLabel(m.role)}
                     </span>
                     <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-foreground/70">
-                      {m.userId ? "Active" : !m.email ? "No login" : m.invitedAt ? "Invited" : "Not invited"}
+                      {{ active: "Active", invited: "Invited", new: "Not invited", none: "No login" }[statusOf(m)]}
                     </span>
                   </div>
                   <p className="mt-0.5 truncate text-sm text-muted-foreground">{m.email || "No email — can be added to trips and bookings, but can’t sign in"}</p>
@@ -210,15 +230,16 @@ function UsersPage() {
                 </div>
                 {isAdmin && (
                   <div className="flex items-center gap-1.5">
-                    {!m.userId && m.email && (
+                    {m.email && m.userId !== user?.id && (
                       <Button
                         size="sm"
-                        variant="secondary"
+                        variant={statusOf(m) === "active" ? "ghost" : "secondary"}
                         onClick={() => sendInvite(m)}
                         disabled={invitingId === m.id}
+                        title={statusOf(m) === "active" ? "Email them a link to set a new password" : undefined}
                       >
                         <Mail className="mr-1.5 h-4 w-4" />
-                        {m.invitedAt ? "Resend invite" : "Invite"}
+                        {{ active: "Send password link", invited: "Resend invite", new: "Invite", none: "Invite" }[statusOf(m)]}
                       </Button>
                     )}
                     <Button size="icon" variant="ghost" onClick={() => startEdit(m)} aria-label="Edit">
