@@ -22,6 +22,7 @@ Import on the Trips page → **Import**. Export from a trip's **Edit** page.
       "to": "DUB",
       "airline": "United",
       "flightNumber": "UA 1",
+      "confirmed": true,
       "who": ["everyone"]
     },
     {
@@ -71,6 +72,8 @@ Import on the Trips page → **Import**. Export from a trip's **Edit** page.
 - **type**: `airfare`, `transportation`, `hotel`, `meal`, or `activity`.
   Restaurant reservations are `meal` (`category`: Breakfast, Lunch, Dinner, Drinks…);
   tours, museums and tastings are `activity` (use `category` for detail).
+- **confirmed**: `true` once it's booked; leave it out while it's still just a plan.
+  (Entries with a `confirmation` number count as booked.)
 - **who**: first names of people already on the People page, or `"everyone"`.
   Leave it out if it's everyone. Unknown names are skipped and listed as a warning.
 - **Hotels**: put them on the check-in date and include `checkIn` / `checkOut`;
@@ -83,7 +86,7 @@ Import on the Trips page → **Import**. Export from a trip's **Edit** page.
   Vote tab with 2–10 options (each option is a booking).
 - Leave out anything you don't know. Never put passwords or card numbers in.
 
-All booking fields: `date, day, type, title, startTime, endTime, who, notes, url,
+All booking fields: `date, day, type, title, startTime, endTime, who, confirmed, notes, url,
 confirmation, cost, mode, from, to, duration, airline, flightNumber, seats,
 terminal, provider, pickup, dropoff, hotelName, address, checkIn, checkOut,
 roomType, guests, category, location, tickets, meetingPoint`.
