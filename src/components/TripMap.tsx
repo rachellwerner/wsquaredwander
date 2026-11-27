@@ -12,6 +12,7 @@ const PIN_COLORS: Record<string, string> = {
   airfare: "var(--airfare)",
   hotel: "var(--hotel)",
   transportation: "var(--transportation)",
+  meal: "var(--meal)",
   activity: "var(--activity)",
 };
 

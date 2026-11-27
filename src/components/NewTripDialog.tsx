@@ -12,8 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Trip } from "@/lib/trips";
 
-const EMOJIS = ["✈️", "🏖️", "🏔️", "🍷", "🍝", "🗽", "🗼", "🏛️", "🌋", "🚆", "🏝️", "🌅", "🍀", "🥃"];
-
 export function NewTripDialog({
   open,
   onOpenChange,
@@ -24,24 +22,20 @@ export function NewTripDialog({
   onCreate: (details: Partial<Trip>) => void;
 }) {
   const [title, setTitle] = useState("");
-  const [destination, setDestination] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [coverEmoji, setCoverEmoji] = useState("✈️");
 
   useEffect(() => {
     if (open) {
       setTitle("");
-      setDestination("");
       setStartDate("");
       setEndDate("");
-      setCoverEmoji("✈️");
     }
   }, [open]);
 
   const handleCreate = () => {
     if (!title.trim()) return;
-    onCreate({ title: title.trim(), destination, startDate, endDate, coverEmoji });
+    onCreate({ title: title.trim(), startDate, endDate });
     onOpenChange(false);
   };
 
@@ -55,44 +49,15 @@ export function NewTripDialog({
 
         <div className="space-y-4">
           <div>
-            <Label className="mb-2 block">Cover</Label>
-            <div className="flex flex-wrap gap-2">
-              {EMOJIS.map((e) => (
-                <button
-                  key={e}
-                  type="button"
-                  onClick={() => setCoverEmoji(e)}
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg border text-lg transition-all ${
-                    coverEmoji === e
-                      ? "border-primary bg-primary/10 ring-2 ring-primary/20"
-                      : "bg-card hover:bg-secondary"
-                  }`}
-                >
-                  {e}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
             <Label htmlFor="new-title" className="mb-1.5 block">
-              Trip name
+              Trip
             </Label>
             <Input
               id="new-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="new-destination" className="mb-1.5 block">
-              Destination
-            </Label>
-            <Input
-              id="new-destination"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
+              placeholder="Ireland 2027"
+              autoFocus
             />
           </div>
 
