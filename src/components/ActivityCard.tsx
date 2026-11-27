@@ -5,7 +5,13 @@ import { ACTIVITY_META, formatTime, mapsLink, normalizeType } from "@/lib/trips"
 import { Button } from "@/components/ui/button";
 import { WhoBadges } from "@/components/WhoChips";
 import { BOOKING_ICONS } from "@/components/booking-icons";
-import { BookingDetailFields, BookingSummaryFields, prepareForSave, type BookingDraft } from "@/components/BookingFields";
+import {
+  BookingDetailFields,
+  BookingSummaryFields,
+  ConfirmedToggle,
+  prepareForSave,
+  type BookingDraft,
+} from "@/components/BookingFields";
 
 function shortDate(iso?: string) {
   if (!iso) return "";
@@ -67,6 +73,8 @@ export function ActivityCard({
   onSave,
   onCancelNew,
   onDelete,
+  onToggleConfirmed,
+  showStatus = true,
 }: {
   activity: Activity | BookingDraft;
   people?: TripPerson[];
@@ -83,6 +91,10 @@ export function ActivityCard({
   /** Cancel on a brand-new entry that was never saved. */
   onCancelNew?: () => void;
   onDelete?: () => void;
+  /** Flip Confirmed/Planning straight from the card (editors only). */
+  onToggleConfirmed?: (confirmed: boolean) => void;
+  /** Show the Confirmed/Planning marker (off for vote options). */
+  showStatus?: boolean;
 }) {
   const [ownExpanded, setOwnExpanded] = useState(defaultExpanded);
   const expanded = expandedProp ?? ownExpanded;
@@ -101,6 +113,7 @@ export function ActivityCard({
   const line = summaryLine(a);
   const details = hasDetails(a);
   const directions = mapsLink(a as Activity);
+  const confirmed = !!a.confirmed;
 
   const beginEdit = () => {
     setDraft({ ...activity, type: normalizeType(activity.type) });
@@ -164,7 +177,11 @@ export function ActivityCard({
   }
 
   return (
-    <div className="group relative rounded-xl border bg-card shadow-sm transition-shadow hover:shadow-md">
+    <div
+      className={`group relative rounded-xl border bg-card shadow-sm transition-shadow hover:shadow-md ${
+        showStatus && !confirmed ? "border-dashed border-muted-foreground/40" : ""
+      }`}
+    >
       <div className="flex items-start gap-2 p-2.5 sm:gap-3 sm:p-3">
         <button
           type="button"
@@ -192,6 +209,16 @@ export function ActivityCard({
             {line && <span className="mt-0.5 block truncate text-sm text-muted-foreground">{line}</span>}
           </span>
         </button>
+
+        {showStatus && (
+          <div className="flex shrink-0 items-center self-center">
+            <ConfirmedToggle
+              size="sm"
+              checked={confirmed}
+              onChange={!readOnly && onToggleConfirmed ? onToggleConfirmed : undefined}
+            />
+          </div>
+        )}
 
         {!readOnly && onSave && (
           <div className="flex shrink-0 gap-0.5 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">

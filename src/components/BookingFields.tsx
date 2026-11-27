@@ -1,6 +1,7 @@
 // The fields for one itinerary entry, split into the always-visible summary
 // and the optional details. Used by the inline card editor and the vote-option dialog.
 import type { ReactNode } from "react";
+import { Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -108,6 +109,57 @@ function Pick({
   );
 }
 
+/**
+ * Checkbox-style pill: checked = booked, unchecked = still planning.
+ * `size="sm"` is the compact version shown on entry cards.
+ */
+export function ConfirmedToggle({
+  checked,
+  onChange,
+  size = "md",
+}: {
+  checked: boolean;
+  onChange?: (next: boolean) => void;
+  size?: "sm" | "md";
+}) {
+  const box = size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4";
+  const pill = size === "sm" ? "h-7 px-2 text-[11px]" : "h-8 px-3 text-xs";
+  const look = checked
+    ? "border-primary/30 bg-primary/10 text-primary"
+    : "border-dashed border-muted-foreground/40 bg-card text-muted-foreground";
+  const inner = (
+    <>
+      <span
+        className={`flex ${box} shrink-0 items-center justify-center rounded-[4px] border ${
+          checked ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/50 bg-background"
+        }`}
+      >
+        {checked && <Check className="h-3 w-3" strokeWidth={3} />}
+      </span>
+      {checked ? "Confirmed" : "Planning"}
+    </>
+  );
+  if (!onChange) {
+    return <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border font-medium ${pill} ${look}`}>{inner}</span>;
+  }
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={checked}
+      aria-label="Confirmed (booked)"
+      title={checked ? "Booked — click to mark as still planning" : "Still planning — click when it's booked"}
+      onClick={(e) => {
+        e.stopPropagation();
+        onChange(!checked);
+      }}
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border font-medium transition-colors hover:border-primary/60 ${pill} ${look}`}
+    >
+      {inner}
+    </button>
+  );
+}
+
 /** Row of five icon buttons for choosing the kind of entry. */
 export function TypePicker({ value, onChange }: { value: ActivityType; onChange: (t: ActivityType) => void }) {
   return (
@@ -139,7 +191,10 @@ export function BookingSummaryFields({ draft, set, autoFocus }: { draft: Booking
   const [startLabel, endLabel] = TIME_LABELS[draft.type];
   return (
     <div className="space-y-3">
-      <TypePicker value={draft.type} onChange={(t) => set("type", t)} />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <TypePicker value={draft.type} onChange={(t) => set("type", t)} />
+        <ConfirmedToggle checked={!!draft.confirmed} onChange={(v) => set("confirmed", v)} />
+      </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
         <Field label="Title" className="col-span-2 sm:col-span-4">
           <Input
