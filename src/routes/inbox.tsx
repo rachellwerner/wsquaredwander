@@ -228,6 +228,7 @@ function PendingCard({
         id: uid(),
         type,
         title,
+        confirmed: true, // it came from a confirmation email
         dayIndex: Math.min(Math.max(dayIndex, 0), Math.max(days.length - 1, 0)),
       };
       delete (activity as unknown as Record<string, unknown>)["date"];
