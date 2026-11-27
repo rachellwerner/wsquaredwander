@@ -143,8 +143,12 @@ function UsersPage() {
   const sendInvite = async (m: Member) => {
     setInvitingId(m.id);
     try {
-      await invite({ data: { memberId: m.id, redirectTo: `${window.location.origin}/set-password` } });
-      toast.success(`Invitation sent to ${m.email}`);
+      const res = await invite({ data: { memberId: m.id, redirectTo: `${window.location.origin}/set-password` } });
+      toast.success(
+        res?.mode === "reset"
+          ? `${m.name} already has an account. Sent a link to set their password to ${m.email}`
+          : `Invitation sent to ${m.email}`,
+      );
       await refetch();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send that invitation");
